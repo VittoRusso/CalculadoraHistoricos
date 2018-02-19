@@ -61,54 +61,63 @@ public class MainActivity extends AppCompatActivity {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "7";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
     public void btn8(View view) {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "8";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
     public void btn9(View view) {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "9";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
     public void btn4(View view) {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "4";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
     public void btn5(View view) {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "5";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
     public void btn6(View view) {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "6";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
     public void btn1(View view) {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "1";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
     public void btn2(View view) {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "2";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
     public void btn3(View view) {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "3";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
 
@@ -116,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
         textEnt = tvEnter.getText().toString();
         textEnt = textEnt + "0";
         tvEnter.setText(textEnt);
+        opStatus = false;
     }
 
     public void btnDel(View view) {
@@ -223,46 +233,78 @@ public class MainActivity extends AppCompatActivity {
     public void Equal () {
         textEnt = tvEnter.getText().toString();
 
-        if(textEnt.contains("+")) {
-            strNum1 = textEnt.substring(0, textEnt.indexOf("+"));
-            strNum2 = textEnt.substring(textEnt.indexOf("+") + 1, textEnt.length());
-            num1 = Float.parseFloat(strNum1);
-            num2 = Float.parseFloat(strNum2);
-            numResult = num1 + num2;
-        }
-        if(textEnt.contains("-")) {
-            strNum1 = textEnt.substring(0, textEnt.indexOf("-"));
-            strNum2 = textEnt.substring(textEnt.indexOf("-") + 1, textEnt.length());
-            num1 = Float.parseFloat(strNum1);
-            num2 = Float.parseFloat(strNum2);
-            numResult = num1 - num2;
-        }
-        if(textEnt.contains("x")) {
-            strNum1 = textEnt.substring(0, textEnt.indexOf("x"));
-            strNum2 = textEnt.substring(textEnt.indexOf("x") + 1, textEnt.length());
-            num1 = Float.parseFloat(strNum1);
-            num2 = Float.parseFloat(strNum2);
-            numResult = num1*num2;
-        }
-        if(textEnt.contains("÷")) {
-            strNum1 = textEnt.substring(0, textEnt.indexOf("÷"));
-            strNum2 = textEnt.substring(textEnt.indexOf("÷") + 1, textEnt.length());
-            num1 = Float.parseFloat(strNum1);
-            num2 = Float.parseFloat(strNum2);
-            numResult = num1/num2;
-        }
+        ArrayList<String> Operatores = new ArrayList<>();
+        ArrayList<Float> Numbers = new ArrayList<>();
 
-        tvResult.setText(String.valueOf(numResult));
-        System.out.println(strNum1 + " + " + strNum2);
-
-        Pattern p = Pattern.compile("[a-z]+|\\d+");
+        Pattern p = Pattern.compile("[-x+÷]+|\\d+");
         Matcher m = p.matcher(textEnt);
-        ArrayList<String> allMatches = new ArrayList<>();
+        final ArrayList<String> allMatches = new ArrayList<>();
         while (m.find()) {
             allMatches.add(m.group());
-            System.out.println(m.group());
-
+            if (isNumeric(m.group())){
+                Numbers.add(Float.valueOf(m.group()));
+                System.out.println("Number: " + m.group());
+            }else{
+                Operatores.add(m.group());
+                System.out.println("Operator: " + m.group());
+            }
         }
+
+        float Acum = 0;
+        int j = 0;
+        for(int i=0;i<Numbers.size();i=i+2){
+            if(i>=Numbers.size()-1){
+                switch (Operatores.get(j)) {
+                    case "+":
+                        Acum = Acum + Numbers.get(i-1);
+                        break;
+                    case "-":
+                        Acum = Acum - Numbers.get(i-1);
+                        break;
+                    case "x":
+                        Acum = Acum * Numbers.get(i-1);
+                        break;
+                    case "÷":
+                        Acum = Acum / Numbers.get(i-1);
+                        break;
+                }
+            }else{
+                switch (Operatores.get(j)) {
+                    case "+":
+                        Acum = Acum + (Numbers.get(i) + Numbers.get(i + 1));
+                        break;
+                    case "-":
+                        Acum = Acum + (Numbers.get(i) - Numbers.get(i + 1));
+                        break;
+                    case "x":
+                        Acum = Acum + (Numbers.get(i) * Numbers.get(i + 1));
+                        break;
+                    case "÷":
+                        Acum = Acum + (Numbers.get(i) / Numbers.get(i + 1));
+                        break;
+                }
+            }
+
+
+
+            j++;
+        }
+
+
+        tvResult.setText(String.valueOf(Acum));
+    }
+
+    public static boolean isNumeric(String str)
+    {
+        try
+        {
+            double d = Double.parseDouble(str);
+        }
+        catch(NumberFormatException nfe)
+        {
+            return false;
+        }
+        return true;
     }
 }
 

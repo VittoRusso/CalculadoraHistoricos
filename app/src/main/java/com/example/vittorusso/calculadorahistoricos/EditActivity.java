@@ -4,18 +4,23 @@ import android.app.Activity;
         import android.app.AlertDialog;
         import android.content.DialogInterface;
         import android.content.Intent;
-        import android.support.v7.app.AppCompatActivity;
+import android.content.res.Configuration;
+import android.support.v7.app.AppCompatActivity;
         import android.os.Bundle;
-        import android.view.Gravity;
+import android.text.InputType;
+import android.view.Gravity;
         import android.view.View;
-        import android.widget.Button;
+import android.view.ViewGroup;
+import android.widget.Button;
         import android.widget.EditText;
         import android.widget.LinearLayout;
         import android.widget.LinearLayout.LayoutParams;
-        import android.widget.TableRow;
+import android.widget.ScrollView;
+import android.widget.TableRow;
         import android.widget.TextView;
 
-        import java.util.ArrayList;
+import java.io.IOException;
+import java.util.ArrayList;
         import java.util.regex.Matcher;
         import java.util.regex.Pattern;
 
@@ -24,6 +29,8 @@ public class EditActivity extends AppCompatActivity {
     private String textEnt, strNum1, strNum2;
     private Float num1, num2, numResult;
     private LinearLayout parent;
+    private ScrollView scrollView;
+    private int positionChar;
 
 
 
@@ -36,9 +43,18 @@ public class EditActivity extends AppCompatActivity {
         Intent iSecond = getIntent();
         textEnt = iSecond.getStringExtra("textEnt");
 
-        final StringBuilder textSal = new StringBuilder(textEnt);
+        parent = findViewById(R.id.Parent);
 
-        parent =findViewById(R.id.Parent);
+        ScrollView scrollView = new ScrollView(EditActivity.this);
+        scrollView.setBackgroundColor(getResources().getColor(R.color.colorTrans));
+        scrollView.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        parent.addView(scrollView);
+
+        LinearLayout childScroll = new LinearLayout(EditActivity.this);
+        childScroll.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+        childScroll.setOrientation(LinearLayout.VERTICAL);
+        scrollView.addView(childScroll);
 
         if (textEnt != null){
 
@@ -46,20 +62,18 @@ public class EditActivity extends AppCompatActivity {
             String returnString = "";
             Pattern p = Pattern.compile("[-x+÷]+|\\d+");
             Matcher m = p.matcher(textEnt);
-            ArrayList<String> allMatches = new ArrayList<>();
+            final ArrayList<String> allMatches = new ArrayList<>();
             while (m.find()) {
                 allMatches.add(m.group());
                 System.out.println(m.group());
 
-
                 LinearLayout child = new LinearLayout(EditActivity.this);
                 child.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1.0f));
-                child.setOrientation(LinearLayout.HORIZONTAL);
-                parent.addView(child);
+                childScroll.addView(child);
 
                 final TextView tv = new TextView(this);
                 tv.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT,1.0f));
-                tv.setGravity(Gravity.LEFT);
+                tv.setGravity(Gravity.CENTER);
                 tv.setTextColor(getResources().getColor(android.R.color.black));
                 tv.setPadding(20, 20, 20, 20);
                 tv.setTextSize(20);
@@ -79,38 +93,69 @@ public class EditActivity extends AppCompatActivity {
 
                 btn.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
+                        String numChange = btn.getText().toString();
+                        positionChar = Character.getNumericValue(numChange.charAt(1));
+                        Character checkChar = numChange.charAt(2);
+                        if(isNumeric(checkChar.toString())){
+                            System.out.println("Es Valido");
+                            String newStr = String.valueOf(positionChar) + String.valueOf(Character.getNumericValue(numChange.charAt(2)));
+                            positionChar = Integer.valueOf(newStr);
+                        };
+                        if(isNumeric(allMatches.get(positionChar-1))){
+                            positionChar = Character.getNumericValue(numChange.charAt(1));
+                            checkChar = numChange.charAt(2);
+                            if(isNumeric(checkChar.toString())){
+                                System.out.println("Es Valido");
+                                String newStr = String.valueOf(positionChar) + String.valueOf(Character.getNumericValue(numChange.charAt(2)));
+                                positionChar = Integer.valueOf(newStr);
+                            };
+                            AlertDialog.Builder alert = new AlertDialog.Builder(EditActivity.this);
+                            alert.setTitle("Editar Numero");
+                            alert.setMessage("Ingrese el numero caracter: ");
+                            final EditText input = new EditText(EditActivity.this);
+                            input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                            input.setRawInputType(Configuration.KEYBOARD_12KEY);
+                            alert.setView(input);
+                            alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                    String EditNumber = input.getText().toString();
+                                    tv.setText(EditNumber);
+                                    System.out.println(positionChar);
+                                    System.out.println(allMatches.get(positionChar-1));
+                                    allMatches.set(positionChar-1,EditNumber);
+                                }
+                            });
 
-                        String number = btn.getText().toString();
-                        Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(number);
-                        while(m.find()) {
-                            System.out.println(m.group(1));
+                            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+
+                                }
+                            });
+                            alert.show();
+                        }else{
+                            final CharSequence operators[] = new CharSequence[] {"x", "÷", "+", "-"};
+                            positionChar = Character.getNumericValue(numChange.charAt(1));
+                            checkChar = numChange.charAt(2);
+                            if(isNumeric(checkChar.toString())){
+                                System.out.println("Es Valido");
+                                String newStr = String.valueOf(positionChar) + String.valueOf(Character.getNumericValue(numChange.charAt(2)));
+                                positionChar = Integer.valueOf(newStr);
+                            };
+                            AlertDialog.Builder alert = new AlertDialog.Builder(EditActivity.this);
+                            alert.setTitle("Editar Operación");
+                            alert.setItems(operators, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    String EditNumber = operators[i].toString();
+                                    tv.setText(EditNumber);
+                                    System.out.println(positionChar);
+                                    System.out.println(allMatches.get(positionChar-1));
+                                    allMatches.set(positionChar-1,EditNumber);
+                                }
+                            });
+                            alert.show();
                         }
 
-                        AlertDialog.Builder alert = new AlertDialog.Builder(EditActivity.this);
-
-                        alert.setTitle("Editar Numero");
-                        alert.setMessage("Ingrese el numero caracter: ");
-                        final EditText input = new EditText(EditActivity.this);
-                        alert.setView(input);
-
-                        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                String EditNumber = input.getText().toString();
-                                String numChange = btn.getText().toString();
-                                int positionChar = Character.getNumericValue(numChange.charAt(1));
-                                tv.setText(EditNumber);
-                                textSal.setCharAt(positionChar,EditNumber.charAt(0));
-                                System.out.println(textSal);
-                            }
-                        });
-
-                        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-
-                            }
-                        });
-
-                        alert.show();
                     }
                 });
             }
@@ -118,7 +163,7 @@ public class EditActivity extends AppCompatActivity {
             LinearLayout childFinal = new LinearLayout(EditActivity.this);
             childFinal.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, 1.0f));
             childFinal.setOrientation(LinearLayout.HORIZONTAL);
-            parent.addView(childFinal);
+            childScroll.addView(childFinal);
 
             Button btnReturn = new Button(this);
             btnReturn.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT,1.0f));
@@ -133,6 +178,12 @@ public class EditActivity extends AppCompatActivity {
             btnReturn.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     Intent returnIntent = new Intent();
+                    String textSal = "";
+                    for(int i=0; i<allMatches.size(); i++){
+                        textSal += allMatches.get(i);
+                    }
+
+                    System.out.println("Texto de Salida: " + textSal);
                     returnIntent.putExtra("textSal",textSal.toString());
                     setResult(Activity.RESULT_OK,returnIntent);
                     finish();
@@ -143,6 +194,19 @@ public class EditActivity extends AppCompatActivity {
 
 
         }
+    }
+
+    public static boolean isNumeric(String str)
+    {
+        try
+        {
+            double d = Double.parseDouble(str);
+        }
+        catch(NumberFormatException nfe)
+        {
+            return false;
+        }
+        return true;
     }
 }
 
