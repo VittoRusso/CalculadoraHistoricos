@@ -137,7 +137,6 @@ public class EditActivity extends AppCompatActivity {
                             positionChar = Character.getNumericValue(numChange.charAt(1));
                             checkChar = numChange.charAt(2);
                             if(isNumeric(checkChar.toString())){
-                                System.out.println("Es Valido");
                                 String newStr = String.valueOf(positionChar) + String.valueOf(Character.getNumericValue(numChange.charAt(2)));
                                 positionChar = Integer.valueOf(newStr);
                             };
